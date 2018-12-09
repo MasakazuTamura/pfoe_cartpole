@@ -8,7 +8,7 @@ import gym
 
 def recv_key(control):
     rospy.loginfo(type(control))
-    rospy.loginfo("%s", control.data)
+    rospy.loginfo(control.data)
 
 def envCartPole():
     env = gym.make("CartPole-v0")

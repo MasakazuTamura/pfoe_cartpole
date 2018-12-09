@@ -2,13 +2,8 @@
 #encoding: utf8
 import rospy, unittest, rostest
 import rosnode
-from std_msgs.msg import String
 import time
 import gym
-
-def recv_key(control):
-    rospy.loginfo(type(control))
-    rospy.loginfo("%s", control.data)
 
 def envCartPole():
     env = gym.make("CartPole-v0")
@@ -34,6 +29,5 @@ def envCartPole():
 
 if __name__ == "__main__":
     rospy.init_node("cartpole")
-#    envCartPole()
-    sub = rospy.Subscriber("key_in", String, recv_key)
+    envCartPole()
     rospy.spin()
