@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import sys,tty,termios
 import rospy
-from std_msgs.msg import String
+from std_msgs.msg import Int16
 
 class _Getch:
     def __call__(self):
@@ -16,32 +16,31 @@ class _Getch:
 
 def get():
     inkey = _Getch()
-    while(1):
-        k=inkey()
+    while not rospy.is_shutdown():
+        k = inkey()
         if k!='':break
-    if k=='\x1b[A':
-        print("up")
-    elif k=='\x1b[B':
-        print("down")
-    elif k=='\x1b[C':
+    if k == '\x1b[C':
         print("right")
+        linear = 1
     elif k=='\x1b[D':
         print("left")
-    return k
+        linear = 0
+    else:
+        print("arrow key only")
+        linear = -1
+    return k, linear
 
 def main():
     for i in range(0,20):
         get()
 
-if __name__=='__main__':
-    rospy.init_node("key_input")
-    pub = rospy.Publisher("key_in", String, queue_size=10)
+if __name__ == '__main__':
+    rospy.init_node("key_cmd")
+    pub = rospy.Publisher("key_in", Int16, queue_size=10)
 
-    rate = rospy.Rate(10)
     while not rospy.is_shutdown():
-        keyin = String()
-        keyevent = get()
-        keyin.data = keyevent
-        print(keyevent, keyin.data)
-        pub.publish(keyin)
-        rate.sleep()
+        key_cmd = Int16()
+        keyevent, key_cmd.data = get()
+        print(keyevent, key_cmd.data)
+        if not key_cmd.data < 0:
+            pub.publish(key_cmd)
