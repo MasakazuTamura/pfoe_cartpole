@@ -40,7 +40,7 @@
   <buildtool_depend>catkin</buildtool_depend>
   <!-- Use depend as a shortcut for packages that are both build and exec dependencies -->
   <!-- Note "depend" contain "build" "build_export" and "exec" -->
-  <depend>roscpp</depend>
+  <!--   <depend>roscpp</depend> -->
   <depend>rospy</depend>
   <depend>std_msgs</depend>
   <!-- Use build_depend for packages you need at compile time: -->

@@ -1,0 +1,4 @@
+<launch>
+  <node pkg="pfoe_cartpole" name="key_cmd" type="key_input.py" required="true" output="screen"/>
+  <node pkg="pfoe_cartpole" name="cartpole" type="cartpole.py"/>
+</launch>

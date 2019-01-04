@@ -9,6 +9,7 @@ class _Getch:
         old_settings = termios.tcgetattr(fd)
         try:
             tty.setraw(sys.stdin.fileno())
+#            ch = sys.stdin.read(1)
             ch = sys.stdin.read(3)
         finally:
             termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
@@ -16,9 +17,10 @@ class _Getch:
 
 def get():
     inkey = _Getch()
-    while not rospy.is_shutdown():
-        k = inkey()
-        if k!='':break
+#    while not rospy.is_shutdown():
+#        k = inkey()
+#    if k!='':break
+    k = inkey()
     if k == '\x1b[C':
         print("right")
         linear = 1
@@ -36,7 +38,7 @@ def main():
 
 if __name__ == '__main__':
     rospy.init_node("key_cmd")
-    pub = rospy.Publisher("key_in", Int16, queue_size=10)
+    pub = rospy.Publisher("key_in", Int16, queue_size=1)
 
     while not rospy.is_shutdown():
         key_cmd = Int16()
