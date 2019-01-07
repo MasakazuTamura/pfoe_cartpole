@@ -28,32 +28,29 @@ def envCartPole_sample():
 
             #棒が倒れている時: reward=0, done=True
             #棒が立っている時: reward=1, done=False
-            print("\nobservation", observation)
-            print("\nreward = ", reward)
-            print("\ndone = ", done)
-            print("\ninfo", info)
+#            print("\nobservation", observation)
+#            print("\nreward = ", reward)
+#            print("\ndone = ", done)
+#            print("\ninfo", info)
 
 class EnvCartPole:
     def __init__(self):
+        self.pub = rospy.Publisher("cartpole_state", CartPoleValues, queue_size=10)
         self.env = gym.make("CartPole-v0")
         self.env_reset()
-        self.pub = rospy.Publisher("cartpole_state", CartPoleValues, queue_size=10)
 
     def env_reset(self):
         self.observation = self.env.reset()
-        print("#########################################################")
-        print("To control this Cart, push Right-arrow or Left-arrow key.")
-        print("\nWhen Cart_position increase or decreace over 2.4")
-        print("   or Pole_angle Tilt over 20.9 deg,")
-        print("   CartPole is Failure (Done is True).")
-        print("#########################################################")
-        self.step = 0
-
-    def do_cartpole(self, linear):
         self.env.render()
-        time.sleep(0.1)
-        action = linear.data
-        self.observation, self.reward, self.done, self.info = self.env.step(action)
+        self.step = 0
+#        print("#########################################################")
+#        print("To control this Cart, push Right-arrow or Left-arrow key.")
+#        print("\nWhen Cart_position increase or decreace over 2.4")
+#        print("   or Pole_angle Tilt over 20.9 deg,")
+#        print("   CartPole is Failure (Done is True).")
+#        print("#########################################################")
+
+    def _publish_state(self):
         data = CartPoleValues()
         data.cart_position = self.observation[0]
         data.cart_velocity = self.observation[1]
@@ -62,29 +59,35 @@ class EnvCartPole:
         data.reward = self.reward
         data.done = self.done
         self.pub.publish(data)
-        if self.done or self.step > 200:
-            print("Episode finished after {} timesteps.".format(self.step + 1))
+
+    def _print_state(self):
+        print("\n{} timesteps.".format(self.step))
+        print("cart_position = ", self.observation[0])
+        print("cart_velocity = ", self.observation[1])
+        print("pole_angle    = ", self.observation[2])
+        print("pole_angular  = ", self.observation[3])
+
+    def action_cartpole(self, linear_x):
+        self.step += 1
+        time.sleep(0.1)
+        action = linear_x.data
+        self.observation, self.reward, self.done, self.info = self.env.step(action)
+        self.env.render()
+        self._publish_state()
+        self._print_state()
+        if self.done:
+            print("Failuer")
+        if self.done or self.step > 199:
+            print("Episode finished after {} timesteps.".format(self.step))
             print("Restart CartPole...")
+            time.sleep(1.0)
             self.env_reset()
-        else:
-            print("cart_position = ", data.cart_position)
-            print("cart_velocity = ", data.cart_velocity)
-            print("pole_angle    = ", data.pole_angle)
-            print("pole_angular  = ", data.pole_angular)
-            self.step += 1
-#        print("\nobservation = ", self.observation)
-#        print("\nreword = ", self.reward)
-#        print("\ndone = ", self.done)
-#        print("\ninfo = ", self.info)
 #        return self.obserbation, self.reward, self.done, self.info
 
 def main():
     rospy.init_node("cartpole")
-#    if start_cartpole == :
-#        cartpole = envCartPole()
-#        start_cartpole = "true"
     cartpole = EnvCartPole()
-    rospy.Subscriber("key_in", Int16, cartpole.do_cartpole)
+    rospy.Subscriber("key_in", Int16, cartpole.action_cartpole)
     rospy.spin()
 
 if __name__ == "__main__backup":
