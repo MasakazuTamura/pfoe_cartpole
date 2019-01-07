@@ -9,13 +9,13 @@ class _Getch:
         old_settings = termios.tcgetattr(fd)
         try:
             tty.setraw(sys.stdin.fileno())
-#            ch = sys.stdin.read(1)
-            ch = sys.stdin.read(3)
+            ch = sys.stdin.read(1)
+#            ch = sys.stdin.read(3)
         finally:
             termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
         return ch
 
-def get():
+def get3():
     inkey = _Getch()
 #    while not rospy.is_shutdown():
 #        k = inkey()
@@ -23,18 +23,41 @@ def get():
     k = inkey()
     if k == '\x1b[C':
         print("right")
-        linear = 1
+        linear_x = 1
     elif k=='\x1b[D':
         print("left")
-        linear = 0
+        linear_x = 0
     else:
         print("arrow key only")
-        linear = -1
-    return k, linear
+        linear_x = -1
+    return k, linear_x
 
-def main():
-    for i in range(0,20):
-        get()
+def get1():
+    inkey = _Getch()
+#    while not rospy.is_shutdown():
+#        k = inkey()
+#    if k!='':break
+    k = inkey()
+    if k == '\x1b':
+        for i in range(0, 2):
+            k += inkey()
+        if k == "\x1b[C":
+#            print("right")
+            linear_x = 1
+        elif k == "\x1b[D":
+#            print("left")
+            linear_x = 0
+        else:
+#            print("right or left only")
+            linear_x = -1
+    elif k == "\x03":
+#        print("ctrl+c key down")
+        linear_x = -1
+    else:
+#        print("unknown command")
+#        print("note: arrow key only")
+        linear_x = -1
+    return k, linear_x
 
 if __name__ == '__main__':
     rospy.init_node("key_cmd")
@@ -42,7 +65,9 @@ if __name__ == '__main__':
 
     while not rospy.is_shutdown():
         key_cmd = Int16()
-        keyevent, key_cmd.data = get()
-        print(keyevent, key_cmd.data)
+        keyevent, key_cmd.data = get1()
+#        print(keyevent, key_cmd.data)
+        if keyevent == "\x03":
+            rospy.signal_shutdown("ctrl+c")
         if not key_cmd.data < 0:
             pub.publish(key_cmd)
