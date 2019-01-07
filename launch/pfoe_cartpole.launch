@@ -1,6 +1,6 @@
 <launch>
-  <node pkg="pfoe_cartpole" name="key_cmd" type="key_input.py" required="true" output="screen"/>
-  <node pkg="pfoe_cartpole" name="cartpole" type="cartpole.py"/>
+  <node pkg="pfoe_cartpole" name="key_cmd" type="key_input.py" required="true"/>
+  <node pkg="pfoe_cartpole" name="cartpole" type="cartpole.py" output="screen"/>
 
   <arg name="set_console" default="wait"/>
   <node pkg="pfoe_cartpole" name="buttons" type="buttons.py">
