@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 #encoding: utf8
+from __future__ import print_function
 import rospy, unittest, rostest
 import rosnode
 from std_msgs.msg import Int16
-from pfoe_cartpole.msg import CartPoleValues
+from pfoe_cartpole.msg import CartPoleValues, ButtonValues
 import time
 import gym
 
@@ -36,19 +37,25 @@ def envCartPole_sample():
 class EnvCartPole:
     def __init__(self):
         self.pub = rospy.Publisher("cartpole_state", CartPoleValues, queue_size=10)
+        rospy.Subscriber("/buttons", ButtonValues, self.button_callback)
         self.env = gym.make("CartPole-v0")
         self.env_reset()
 
+        self.mid_toggle = False
+
     def env_reset(self):
+        self.env.seed(0)
         self.observation = self.env.reset()
         self.env.render()
+        self.done = False
         self.step = 0
-#        print("#########################################################")
-#        print("To control this Cart, push Right-arrow or Left-arrow key.")
-#        print("\nWhen Cart_position increase or decreace over 2.4")
-#        print("   or Pole_angle Tilt over 20.9 deg,")
-#        print("   CartPole is Failure (Done is True).")
-#        print("#########################################################")
+        print("\r#########################################################")
+        print("\rTo control this Cart, push Right-arrow or Left-arrow key.")
+        print("\rWhen Cart_position increase over 2.4, decreace less -2.4,")
+        print("\r   or Pole_angle Tilt over 20.9 deg,")
+        print("\r   CartPole is Failure (Done is True).")
+        print("\r#########################################################")
+        self._print_state()
 
     def _publish_state(self):
         data = CartPoleValues()
@@ -61,27 +68,37 @@ class EnvCartPole:
         self.pub.publish(data)
 
     def _print_state(self):
-        print("\n{} timesteps.".format(self.step))
-        print("cart_position = ", self.observation[0])
-        print("cart_velocity = ", self.observation[1])
-        print("pole_angle    = ", self.observation[2])
-        print("pole_angular  = ", self.observation[3])
+        print("\r----------------")
+        print("\r{} timesteps.".format(self.step))
+        print("\rcart_position = ", self.observation[0])
+        print("\rcart_velocity = ", self.observation[1])
+        print("\rpole_angle    = ", self.observation[2])
+        print("\rpole_angular  = ", self.observation[3])
+        print("\rdone  = ", self.done)
+
+    def button_callback(self, msg):
+        if not msg.mid_toggle == self.mid_toggle:
+            if self.mid_toggle:
+                self.env_reset()
+            self.mid_toggle = msg.mid_toggle
 
     def action_cartpole(self, linear_x):
         self.step += 1
         time.sleep(0.1)
         action = linear_x.data
         self.observation, self.reward, self.done, self.info = self.env.step(action)
-        self.env.render()
         self._publish_state()
         self._print_state()
         if self.done:
-            print("Failuer")
+            print("\rFailuer!")
         if self.done or self.step > 199:
-            print("Episode finished after {} timesteps.".format(self.step))
-            print("Restart CartPole...")
+            print("\r----------------")
+            print("\rEpisode finished after {} timesteps.".format(self.step))
+            print("\rRestart CartPole...")
             time.sleep(1.0)
             self.env_reset()
+        else:
+            self.env.render()
 #        return self.obserbation, self.reward, self.done, self.info
 
 def main():
