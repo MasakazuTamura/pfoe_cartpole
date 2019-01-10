@@ -69,7 +69,7 @@ def get1():
 #        print("ctrl+s key down")
         linear_x = -1
     # ^X
-    elif k == "\x18"
+    elif k == "\x18":
 #        print("ctrl+x key down")
         linear_x = -1
     else:
