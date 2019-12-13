@@ -37,6 +37,7 @@ def envCartPole_sample():
 class EnvCartPole:
     def __init__(self):
         self.pub = rospy.Publisher("cartpole_state", CartPoleValues, queue_size=10)
+        self.pub_result = rospy.Publisher("time_per_time", Int16, queue_size=10)    #csv出力用
         rospy.Subscriber("/buttons", ButtonValues, self.button_callback)
         self.env = gym.make("CartPole-v0")
         self.env_reset()
@@ -51,8 +52,9 @@ class EnvCartPole:
         self.step = 0
         print("\r#########################################################")
         print("\rTo control this Cart, push Right-arrow or Left-arrow key.")
-        print("\rWhen Cart_position increase over 2.4, decreace less -2.4,")
-        print("\r   or Pole_angle Tilt over 20.9 deg,")
+        print("\rWhen Cart_position is more than +-2.4,")
+        print("\r   Pole_angle is more than +-12 deg,")
+        print("\r   or Episode_length is greater than 200,")
         print("\r   CartPole is Failure (Done is True).")
         print("\r#########################################################")
         self._print_state()
@@ -92,6 +94,7 @@ class EnvCartPole:
         if self.done:
             print("\rFailuer!")
         if self.done or self.step > 199:
+            self.pub_result.publish(self.step)
             print("\r----------------")
             print("\rEpisode finished after {} timesteps.".format(self.step))
             print("\rRestart CartPole...")

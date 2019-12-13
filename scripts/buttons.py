@@ -11,7 +11,7 @@ class Buttons():
 
         self.msg = ButtonValues()
         self.state = "wait"
-        self.state = self.get_state
+        self.state = self.get_state()
         self.done = "replay"
 
     def run(self):

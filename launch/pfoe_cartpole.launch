@@ -6,5 +6,6 @@
   <node pkg="pfoe_cartpole" name="buttons" type="buttons.py" output="screen">
     <param name="/console" value="$(arg set_console)" type="str"/>
   </node>
+  <node pkg="pfoe_cartpole" name="result_logger" type="result_logger.py" output="screen"/>
 </launch>
 
