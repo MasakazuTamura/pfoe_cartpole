@@ -12,6 +12,63 @@ class Buttons():
         self.msg = ButtonValues()
         self.state = "wait"
         self.state = self.get_state()
+
+    def run(self):
+        rate = rospy.Rate(10)
+
+        while not rospy.is_shutdown():
+            s = self.get_state()
+            if s != self.state:
+                self.state = s
+
+                if self.state == "replay":
+                    print("\rconsole: change to \"replay\"")
+                    self.msg.front_toggle = False
+                    self.msg.mid_toggle = True
+                elif self.state == "wait":
+                    print("\rconsole: change to \"wait\"")
+                    self.msg.front_toggle = False
+                    self.msg.mid_toggle = False
+                elif self.state == "teach":
+                    print("\rconsole: change to \"teach\"")
+                    self.msg.front_toggle = True
+                    self.msg.mid_toggle = False
+
+                self.pub.publish(self.msg)
+
+            rate.sleep()
+
+    def get_state(self):
+        console = rospy.get_param("console", "wait")
+        try:
+            if not console in ["wait", "teach", "replay"]:
+                raise Exception("unknown state")
+        except Exception as error:
+#            rospy.logerr("Value error: ", error)
+            print("\rValue error: {}".format(error))
+            console = "wait"
+
+        return console
+
+    def callback(self, cartpolestate):
+        #to reset cartpoleenv after cartpolesate.done turn to True
+        if self.state == "replay":
+            if cartpolestate.done == True:
+                print("\rconsole: reset cartpole env")
+                self.msg.front_toggle = False
+                self.msg.mid_toggle = False
+                self.pub.publish(self.msg)
+                time.sleep(2.0)
+                self.state = "wait"
+
+class Buttons_backup():
+    def __init__(self):
+        self.pub = rospy.Publisher("buttons", ButtonValues, queue_size=5)
+        rospy.Subscriber("cartpole_state", CartPoleValues, self.callback)
+
+        self.msg = ButtonValues()
+        self.state = "wait"
+        self.state = self.get_state()
         self.done = "replay"
 
     def run(self):

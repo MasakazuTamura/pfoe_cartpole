@@ -36,13 +36,15 @@ def envCartPole_sample():
 
 class EnvCartPole:
     def __init__(self):
-        self.pub = rospy.Publisher("cartpole_state", CartPoleValues, queue_size=10)
+        self.pub = rospy.Publisher("cartpole_state", CartPoleValues, queue_size=1)
         self.pub_result = rospy.Publisher("time_per_time", Int16, queue_size=10)    #csv出力用
         rospy.Subscriber("/buttons", ButtonValues, self.button_callback)
         self.env = gym.make("CartPole-v0")
         self.env_reset()
 
+        self.front_toggle = False
         self.mid_toggle = False
+        self.steps_threshold = 199
 
     def env_reset(self):
         self.env.seed(0)
@@ -57,6 +59,7 @@ class EnvCartPole:
         print("\r   or Episode_length is greater than 200,")
         print("\r   CartPole is Failure (Done is True).")
         print("\r#########################################################")
+        self._publish_state()
         self._print_state()
 
     def _publish_state(self):
@@ -79,9 +82,21 @@ class EnvCartPole:
         print("\rdone  = ", self.done)
 
     def button_callback(self, msg):
-        if not msg.mid_toggle == self.mid_toggle:
-            if self.mid_toggle:
+        if not msg.front_toggle == self.front_toggle:
+            self.front_toggle = msg.front_toggle
+            if self.front_toggle:
+                self.steps_threshold = 999
+            else:
+                self.steps_threshold = 199
+                print("\r----------------")
+                print("\rEpisode finished after {} timesteps.".format(self.step))
+                print("\rRestart CartPole...")
+                time.sleep(1.0)
                 self.env_reset()
+
+        if not msg.mid_toggle == self.mid_toggle:
+            #if self.mid_toggle == True:
+            #    self.env_reset()
             self.mid_toggle = msg.mid_toggle
 
     def action_cartpole(self, linear_x):
@@ -93,11 +108,16 @@ class EnvCartPole:
         self._print_state()
         if self.done:
             print("\rFailuer!")
-        if self.done or self.step > 199:
+        if self.done or self.step > self.steps_threshold:
             self.pub_result.publish(self.step)
             print("\r----------------")
             print("\rEpisode finished after {} timesteps.".format(self.step))
             print("\rRestart CartPole...")
+            if self.mid_toggle == True:
+                while self.mid_toggle:
+                    time.sleep(0.1)
+                while not self.mid_toggle:
+                    time.sleep(1.0)
             time.sleep(1.0)
             self.env_reset()
         else:
