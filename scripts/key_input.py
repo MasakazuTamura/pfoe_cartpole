@@ -108,7 +108,7 @@ if __name__ == '__main__':
             elif keyevent == "\x13":
                 with open(file_path, mode="w") as f:
                     f.write("\n".join(map(str, key_cmd_list)))
-#                print("saved key_cmd history as {}".formad(file_path))
+#                print("save key_cmd history as {}".format(file_path))
                 key_cmd_list = []
             # ^X
             elif keyevent == "\x18":
