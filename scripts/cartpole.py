@@ -49,6 +49,7 @@ class EnvCartPole:
         rospy.Subscriber("/key_in", Int16, self.cmdvel_callback)
         rospy.Subscriber("/buttons", ButtonValues, self.button_callback)
         self.make_env("CartPolePFoE-v0")
+        self.env.seed(0)
         self.env_reset()
 
         self.front_toggle = False
@@ -66,7 +67,7 @@ class EnvCartPole:
         print("\r   or Episode_length is greater than 200,")
         print("\r   CartPole is Failure (Done is True).")
         print("\r#########################################################")
-        self.env.seed(0)
+        #self.env.seed(0)
         self.observation = self.env.reset()
         self.env.render()
         self.reward = 0.0
@@ -106,15 +107,18 @@ class EnvCartPole:
             self.front_toggle = msg.front_toggle
             if self.front_toggle:
                 self.steps_threshold = 999
+                self.env.seed(0)
                 self.env_reset()
             else:
                 self.steps_threshold = 199
                 time.sleep(1.0)
+                self.env.seed(0)
                 self.env_reset()
 
         if not msg.mid_toggle == self.mid_toggle:
             self.mid_toggle = msg.mid_toggle
             if self.mid_toggle:
+                #self.env.seed(0)
                 self.env_reset()
 
     def action_cartpole(self, linear_x):
@@ -160,11 +164,13 @@ class EnvCartPole:
                     if self.step < 200:
                         print("\rFailuer")
                     self._print_result()
+                    self.done = True
                     self.pub_result.publish(self.step)
                     self.input_keycmd = False
                     self._publish_state()
-                    if not self.front_toggle and not self.mid_toggle:
+                    if not self.mid_toggle:
                         time.sleep(1.0)
+                        self.env.seed(0)
                         self.env_reset()
                 else:
                     self.input_keycmd = False
