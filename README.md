@@ -28,7 +28,7 @@ $ roslaunch raspimouse_gamepad_teach_and_replay teach_and_replay.launch
 | ctrl+r | キーログ`key_cmd_list.txt`を再生 |
 | ctrl+s | 操作履歴を`key_cmd_list.txt`として保存 |
 | ctrl+x | 操作履歴をクリア |
-- ただし、`key_cmd_list.txt`の保存場所は要編集
+- `key_input.py`中の、`key_cmd_list.txt`の保存場所は要編集
 
 ### モード変更
 [MasakazuTamura/raspimouse_gamepad_teach_and_replay](https://github.com/MasakazuTamura/raspimouse_gamepad_teach_and_replay/tree/cartpole)との併用前提だが、本パッケージのみでも作動する  
